@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SOLO SYSTEM | S-Rank Fitness Tracker</title>
+  <style>
+    :root {
+      --bg-dark: #07080d;
+      --card-bg: #10121d;
+      --panel-bg: rgba(16, 22, 38, 0.85);
+      --neon-purple: #8b5cf6;
+      --neon-blue: #3b82f6;
+      --neon-cyan: #06b6d4;
+      --neon-green: #10b981;
+      --neon-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glow: rgba(139, 92, 246, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 60%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.1), transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 90px;
+      overflow-x: hidden;
+    }
+
+    /* TOP HEADER */
+    .system-header {
+      text-align: center;
+      padding: 20px 16px 12px;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+      background: rgba(7, 8, 13, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
+
+    .divider-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 6px 0;
+    }
+
+    .divider-line .line {
+      height: 2px;
+      width: 110px;
+      background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+      box-shadow: 0 0 8px var(--neon-purple);
+    }
+
+    .divider-line .diamond {
+      width: 7px;
+      height: 7px;
+      background: #a7f3d0;
+      transform: rotate(45deg);
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .player-title {
+      font-size: 1.25rem;
+      letter-spacing: 4px;
+      font-weight: 700;
+      color: #e2e8f0;
+      text-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+    }
+
+    .top-bar-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 480px;
+      margin: 10px auto 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .streak-pill {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      color: #fbbf24;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+    }
+
+    .day-btn {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid var(--neon-blue);
+      color: #93c5fd;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .tab-section {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-label {
+      font-size: 0.85rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--neon-cyan);
+      margin-bottom: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* FLOATING QUEST CARDS */
+    .quest-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(139, 92, 246, 0.08);
+      transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quest-card:active {
+      transform: scale(0.98);
+    }
+
+    .quest-card.completed {
+      border-color: rgba(16, 185, 129, 0.45);
+      background: rgba(16, 28, 26, 0.7);
+      opacity: 0.75;
+    }
+
+    .quest-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .quest-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .quest-info h3 {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      transition: all 0.25s ease;
+    }
+
+    .quest-card.completed .quest-info h3 {
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      text-decoration-color: var(--neon-green);
+      color: var(--text-muted);
+    }
+
+    .quest-meta {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .quest-points {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .pts-badge {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      color: #60a5fa;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 5px 10px;
+      border-radius: 10px;
+      margin-bottom: 4px;
+    }
+
+    .stat-tag {
+      display: block;
+      font-size: 0.7rem;
+      color: #a78bfa;
+      letter-spacing: 1px;
+    }
+
+    /* CALISTHENICS BOSS BANNER */
+    .boss-card {
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.4), rgba(15, 23, 42, 0.95));
+      border: 1px solid #c084fc;
+      border-radius: 18px;
+      padding: 18px;
+      margin-top: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 20px rgba(192, 132, 252, 0.2);
+    }
+
+    .boss-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .boss-tag {
+      background: #9333ea;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 1.5px;
+    }
+
+    .boss-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #f3e8ff;
+      margin: 4px 0;
+    }
+
+    .wall-warning {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--neon-red);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .wall-warning h3 {
+      color: #fca5a5;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .wall-warning p {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+
+    .btn-glow {
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+    }
+
+    /* STATUS SECTION (IMAGE 1 + IMAGE 6 COMBINED) */
+    .status-window {
+      background: #0b0d16;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: 20px;
+      padding: 20px 16px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .rank-pill-wrap {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .rank-pill {
+      display: inline-block;
+      border: 1.5px solid #34d399;
+      color: #6ee7b7;
+      padding: 5px 24px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      letter-spacing: 3px;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
+    }
+
+    .level-display {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .level-label {
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+    }
+
+    .level-num {
+      font-size: 3.2rem;
+      font-weight: 300;
+      color: #a7f3d0;
+      line-height: 1.1;
+      text-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+    }
+
+    .level-underline {
+      width: 45px;
+      height: 2px;
+      background: #34d399;
+      margin: 6px auto 0;
+    }
+
+    /* HOLOGRAPHIC DATA BLOCK (IMAGE 6 STYLE) */
+    .holo-panel {
+      background: rgba(14, 28, 45, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 20px;
+      box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.12), 0 0 12px rgba(6, 182, 212, 0.15);
+    }
+
+    .holo-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .holo-title {
+      font-size: 0.8rem;
+      color: #7dd3fc;
+      letter-spacing: 1.5px;
+    }
+
+    .holo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .holo-stat {
+      background: rgba(7, 16, 28, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 8px 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .holo-stat-name {
+      font-size: 0.75rem;
+      color: #bae6fd;
+      font-weight: 700;
+    }
+
+    .holo-stat-sub {
+      display: block;
+      font-size: 0.63rem;
+      color: #64748b;
+    }
+
+    .holo-stat-val {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #e0f2fe;
+      text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+    }
+
+    /* HEXAGON RADAR CHART (IMAGE 1 STYLE) */
+    .radar-container {
+      position: relative;
+      width: 100%;
+      max-width: 310px;
+      margin: 10px auto 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* PROGRESS BARS (IMAGE 1 STYLE) */
+    .xp-section {
+      margin-top: 10px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .xp-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .xp-big-number {
+      text-align: center;
+      font-size: 1.9rem;
+      font-weight: 500;
+      color: #fff;
+      margin: 8px 0 12px;
+      letter-spacing: 1px;
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 10px;
+      background: #1e2230;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 12px #3b82f6;
+    }
+
+    .rank-track {
+      width: 100%;
+      height: 4px;
+      background: #1e2230;
+      border-radius: 999px;
+      position: relative;
+      margin: 10px 0 6px;
+    }
+
+    .rank-fill {
+      height: 100%;
+      background: var(--neon-purple);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 10px var(--neon-purple);
+    }
+
+    /* COMPETITION TIER LIST (IMAGE 2 STYLE) */
+    .tier-board {
+      border: 2px solid #000;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #141414;
+    }
+
+    .tier-row {
+      display: flex;
+      border-bottom: 2px solid #000;
+      min-height: 76px;
+    }
+
+    .tier-row:last-child {
+      border-bottom: none;
+    }
+
+    .tier-label {
+      width: 88px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.78rem;
+      color: #111;
+      text-align: center;
+      padding: 6px;
+      border-right: 2px solid #000;
+    }
+
+    .tier-avatars {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px;
+      align-items: center;
+      background: #1a1a1a;
+    }
+
+    .rival-box {
+      width: 62px;
+      height: 62px;
+      border-radius: 6px;
+      background: #262626;
+      border: 1px solid #404040;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .rival-box.current-target {
+      border: 2px solid #f59e0b;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+
+    .rival-box.defeated {
+      opacity: 0.55;
+      border-color: #10b981;
+    }
+
+    .rival-box.player-box {
+      border: 2px solid #06b6d4;
+      background: linear-gradient(180deg, #0f172a, #083344);
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.7);
+    }
+
+    .rival-lvl-tag {
+      position: absolute;
+      top: 2px;
+      left: 3px;
+      font-size: 0.58rem;
+      background: rgba(0, 0, 0, 0.75);
+      color: #e2e8f0;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-weight: 700;
+    }
+
+    .rival-name {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.82);
+      color: #fff;
+      font-size: 0.58rem;
+      text-align: center;
+      padding: 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      z-index: 2;
+    }
+
+    /* POSES TROPHY GRID */
+    .poses-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .pose-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px;
+      position: relative;
+    }
+
+    .pose-card.unlocked {
+      border-color: var(--neon-green);
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+
+    .pose-card.active-pose {
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
+    }
+
+    .pose-step {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .pose-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .pose-status {
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    /* MODAL FOR LEVEL UP & POSE CHECK */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #0f1322;
+      border: 2px solid var(--neon-purple);
+      border-radius: 20px;
+      padding: 24px 20px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 35px rgba(139, 92, 246, 0.5);
+    }
+
+    .modal-box h2 {
+      color: #c084fc;
+      letter-spacing: 2px;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    .modal-box p {
+      color: #cbd5e1;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-yes {
+      flex: 1;
+      background: var(--neon-green);
+      color: #052e16;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-no {
+      flex: 1;
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid var(--neon-red);
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* BOTTOM NAVIGATION */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(11, 13, 22, 0.95);
+      border-top: 1px solid rgba(139, 92, 246, 0.3);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 6px 14px;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .nav-btn.active {
+      color: #c084fc;
+      text-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+    }
+
+    .nav-icon {
+      font-size: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="system-header">
+    <div class="divider-line">
+      <div class="line"></div>
+      <div class="diamond"></div>
+      <div class="line"></div>
+    </div>
+    <div class="player-title">SOLO PLAYER</div>
+    <div class="divider-line">
+      <div class="line"></div>
+      <div class="diamond"></div>
+      <div class="line"></div>
+    </div>
+    <div class="top-bar-stats">
+      <div class="streak-pill">🔥 <span id="streakCount">0</span> Day Streak</div>
+      <div id="headerRankBadge" style="color:#a7f3d0; font-weight:700;">E-RANK | LVL 1</div>
+      <button class="day-btn" onclick="startNextDay()">+ Next Day</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- TAB 1: DAILY QUESTS -->
+    <section id="tab-quests" class="tab-section active">
+      <div class="section-label">
+        <span>⚡ Daily Quests</span>
+        <span id="dayCycleText">Day 1 of 4 in Sub-Level</span>
+      </div>
+
+      <!-- Wall Warning if Pose Not Achieved -->
+      <div id="poseWallBanner" class="wall-warning" style="display:none;">
+        <h3>⚠️ LEVEL WALL ACTIVE</h3>
+        <p>Daily Quests are frozen! You must master your current Calisthenics Boss Pose (<strong id="wallPoseName"></strong>) to advance to the next level.</p>
+        <button class="btn-glow" onclick="confirmPoseMastered()">I Have Mastered This Pose!</button>
+      </div>
+
+      <!-- Floating Quest Cards Container -->
+      <div id="questListContainer"></div>
+
+      <!-- Active Calisthenics Boss Card (Unlocks at Rank E Level 5) -->
+      <div id="activeBossContainer"></div>
+    </section>
+
+    <!-- TAB 2: STATUS DASHBOARD (DUAL STATUS: HOLOGRAPHIC + HEXAGON) -->
+    <section id="tab-status" class="tab-section">
+      <div class="status-window">
+        <div class="rank-pill-wrap">
+          <span class="rank-pill" id="statusRankPill">E - RANK</span>
+        </div>
+
+        <div class="level-display">
+          <div class="level-label">SUB-LEVEL</div>
+          <div class="level-num" id="statusSubLevel">1</div>
+          <div class="level-underline"></div>
+        </div>
+
+        <!-- HOLOGRAPHIC DATA BLOCK -->
+        <div class="holo-panel">
+          <div class="holo-top">
+            <span class="holo-title">STATUS // PHYSICAL ADVANTAGES</span>
+            <span style="font-size:0.75rem; color:#38bdf8;" id="statusTitleText">TITLE: E-Rank Novice</span>
+          </div>
+          <div class="holo-grid">
+            <div class="holo-stat">
+              <div>
+                <span class="holo-stat-name">💥 STR</span>
+                <span class="holo-stat-sub">Striking Power</span>
+              </div>
+              <span class="holo-stat-val" id="statSTR">10</span>
+            </div>
+            <div class="holo-stat">
+              <div>
+                <span class="holo-stat-name">⚡ VIT</span>
+                <span class="holo-stat-sub">Vitality Base</span>
+              </div>
+              <span class="holo-stat-val" id="statVIT">10</span>
+            </div>
+            <div class="holo-stat">
+              <div>
+                <span class="holo-stat-name">🛡️ END</span>
+                <span class="holo-stat-sub">Core Endurance</span>
+              </div>
+              <span class="holo-stat-val" id="statEND">10</span>
+            </div>
+            <div class="holo-stat">
+              <div>
+                <span class="holo-stat-name">🌪️ AGI</span>
+                <span class="holo-stat-sub">Torsion Agility</span>
+ 
